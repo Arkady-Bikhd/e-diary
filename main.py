@@ -14,9 +14,7 @@ def main():
     
     try:
         full_name, subject = create_parser()
-        subject = subject.title()
-        schoolkid = Schoolkid.objects.get(full_name__contains=full_name)
-        fix_ediary(schoolkid, subject)
+        fix_ediary(full_name, subject)
     except Schoolkid.MultipleObjectsReturned:
         print('Найдено несколько записей! Уточните информацию об ученике!')
     except Subject.DoesNotExist:
@@ -27,8 +25,9 @@ def main():
         print('Такой урок не найден!')
                 
 
-def fix_ediary(schoolkid, subject):
+def fix_ediary(full_name, subject):
     
+    schoolkid = Schoolkid.objects.get(full_name__contains=full_name)
     Mark.objects.filter(schoolkid=schoolkid, points__in=[2, 3]).update(points=5)
     Chastisement.objects.filter(schoolkid=schoolkid).delete()    
     lesson = Lesson.objects.filter(year_of_study=6, group_letter='А', subject__title=subject).order_by('?').first()    
