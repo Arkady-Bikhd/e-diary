@@ -23,7 +23,8 @@ def main():
         print('Такого предмета нет! Уточните информацию!')
     except Schoolkid.DoesNotExist:
         print('Такого ученика нет! Проверьте введённые данные!')
-    
+    except Lesson.DoesNotExist:
+        print('Такой урок не найден!')
                 
 
 def fix_ediary(schoolkid, subject):
