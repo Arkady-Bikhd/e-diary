@@ -31,8 +31,11 @@ def fix_ediary(full_name, subject):
     Mark.objects.filter(schoolkid=schoolkid, points__in=[2, 3]).update(points=5)
     Chastisement.objects.filter(schoolkid=schoolkid).delete()    
     lesson = Lesson.objects.filter(year_of_study=6, group_letter='А', subject__title=subject).order_by('?').first()    
-    Commendation.objects.create(text=choice(COMMENDATION), created = lesson.date,
+    if lesson:    
+        Commendation.objects.create(text=choice(COMMENDATION), created = lesson.date,
                             schoolkid=schoolkid, subject=lesson.subject, teacher=lesson.teacher)
+    else:
+        print('Урок не найден')
 
 
 def create_parser():
