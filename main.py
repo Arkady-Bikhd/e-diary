@@ -1,4 +1,4 @@
-from datacenter.models import Schoolkid, Subject, Teacher, Lesson, Chastisement, Commendation, Mark
+from datacenter.models import Schoolkid, Subject, Lesson, Chastisement, Commendation, Mark
 from random import choice
 import argparse
 
@@ -14,7 +14,10 @@ def main():
     
     try:
         full_name, subject = create_parser()
-        fix_ediary(full_name, subject)
+        schoolkid = get_schoolkid(full_name)
+        fix_marks(schoolkid)
+        remove_chastisements(schoolkid)
+        create_commendation(schoolkid, subject)
     except Schoolkid.MultipleObjectsReturned:
         print('Найдено несколько записей! Уточните информацию об ученике!')
     except Subject.DoesNotExist:
@@ -25,17 +28,31 @@ def main():
         print('Такой урок не найден!')
                 
 
-def fix_ediary(full_name, subject):
-    
+def get_schoolkid(full_name):
+
     schoolkid = Schoolkid.objects.get(full_name__contains=full_name)
+    return schoolkid
+
+
+def fix_marks(schoolkid):
+
     Mark.objects.filter(schoolkid=schoolkid, points__in=[2, 3]).update(points=5)
-    Chastisement.objects.filter(schoolkid=schoolkid).delete()    
-    lesson = Lesson.objects.filter(year_of_study=6, group_letter='А', subject__title=subject).order_by('?').first()    
-    if lesson:    
-        Commendation.objects.create(text=choice(COMMENDATION), created = lesson.date,
-                            schoolkid=schoolkid, subject=lesson.subject, teacher=lesson.teacher)
-    else:
+
+
+def remove_chastisements(schoolkid):
+
+    Chastisement.objects.filter(schoolkid=schoolkid).delete()  
+
+
+def create_commendation(schoolkid, subject):
+ 
+    lesson = Lesson.objects.filter(year_of_study=schoolkid.year_of_study, group_letter=schoolkid.group_letter,
+                                    subject__title=subject).order_by('?').first()
+    if not lesson:    
         print('Урок не найден')
+        return
+    Commendation.objects.create(text=choice(COMMENDATION), created = lesson.date,
+                            schoolkid=schoolkid, subject=lesson.subject, teacher=lesson.teacher)
 
 
 def create_parser():
